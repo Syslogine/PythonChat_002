@@ -1,3 +1,3 @@
 # config.py
 
-OPENAI_API_KEY = "REPLACE THIS"
+OPENAI_API_KEY = "your-api-key"
