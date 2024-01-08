@@ -1,31 +1,40 @@
 import json
 import logging
+import requests
 from os import path
-from config import EXIT_COMMAND, OPENAI_API_KEY, OPENAI_MODEL_NAME
-from openai import OpenAI
+from config import EXIT_COMMAND, OPENAI_API_KEY, OPENAI_MODEL_NAME, OPENAI_API_ENDPOINT
+from openai import OpenAI , OpenAIError
 
 api_key = OPENAI_API_KEY
 client = OpenAI(api_key=api_key)
 
 def chat_with_openai(prompt, history):
     history.append({"role": "user", "content": prompt})
-    try:
-        response = client.chat.completions.create(
-            model=OPENAI_MODEL_NAME,
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                *history
-            ]
-        )
-    except Exception as e:
-        logging.error(f"Error during API call: {e}")
-        return "I'm sorry, but I encountered an error."
 
-    if response.choices and response.choices[0].message and response.choices[0].message.content:
-        ai_response = response.choices[0].message.content
-    else:
-        logging.warning("Invalid AI response content.")
-        ai_response = "I'm sorry, but I couldn't generate a valid response."
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+    }
+
+    data = {
+        "model": OPENAI_MODEL_NAME,
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            *history
+        ]
+    }
+
+    try:
+        response = requests.post(OPENAI_API_ENDPOINT + "chat/completions", json=data, headers=headers, verify=True)
+        response.raise_for_status()
+        response_json = response.json()
+        ai_response = response_json["choices"][0]["message"]["content"]
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error during API call: {e}")
+        return "I'm sorry, but I encountered an error during the conversation."
+    except OpenAIError as e:
+        logging.error(f"OpenAI API error: {e}")
+        return "I'm sorry, but I encountered an error during the conversation."
 
     history.append({"role": "assistant", "content": ai_response})
 
@@ -35,12 +44,6 @@ def save_chat_history(history, filename="chat_history.json"):
     with open(filename, "w") as file:
         json.dump(history, file)
 
-def load_chat_history(filename="chat_history.json"):
-    if path.exists(filename):
-        with open(filename, "r") as file:
-            return json.load(file)
-    return []
-
 def show_help():
     help_message = (
         "\033[1;32mYou can interact with the ChatBot by typing messages.\033[0m\n"
@@ -49,25 +52,42 @@ def show_help():
     )
     print(f"AI: \n{help_message}")
 
-def show_chat_history(history):
+def show_chat_history(history, max_display=5):
     print("AI: Here is the recent chat history:")
-    for message in history:
+
+    start_index = max(0, len(history) - max_display)
+    end_index = len(history)
+    
+    for message in history[start_index:end_index]:
         role = message["role"]
         content = message["content"]
         print(f"{role.capitalize()}: {content}")
+
+    print(f"AI: Displaying the most recent {min(len(history), max_display)} entries.")
+
+def load_chat_history(filename="chat_history.json"):
+    try:
+        with open(filename, "r") as file:
+            history = json.load(file)
+        return history
+    except FileNotFoundError:
+        return []
+    except Exception as e:
+        logging.error(f"Error loading chat history: {e}")
+        return []
 
 def main():
     chat_history = load_chat_history()
     print("Welcome to the ChatBot! Type 'exit' to end the conversation.")
 
     def is_valid_input(user_input):
-        return user_input.strip() != "" or user_input.lower() == 'history'
+        return user_input.strip() != '' or user_input.lower() == 'history'
 
     while True:
         user_input = input("User: ")
 
         if not is_valid_input(user_input):
-            print("Please provide a valid input.")
+            print("Please provide a valid input. Type 'help' for assistance.")
             continue
 
         if user_input.lower() == EXIT_COMMAND:
@@ -85,3 +105,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
