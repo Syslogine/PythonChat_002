@@ -1,48 +1,79 @@
-# PythonChat_002
+# ChatBot Script Tutorial
 
-This script, named PythonChat_002, interacts with the OpenAI GPT-3.5-turbo model to simulate a chat conversation between a user and an AI assistant.
+This tutorial provides a breakdown of the Python script for a ChatBot using the OpenAI GPT-3.5 Turbo model. The script allows users to interact with the ChatBot, with the option to exit the conversation, view chat history, and receive assistance.
 
-## Usage
+## Prerequisites
+Before using the script, make sure to set up your OpenAI API key. You need to create a `config.py` file with your API key. Example content:
 
-1. Replace the placeholder in `config.py` with your OpenAI API key:
+```python
+# config.py
 
-   ```python
-   # config.py
-   OPENAI_API_KEY = "your-api-key"
-   ```
+OPENAI_API_KEY = "your-api-key"
+OPENAI_MODEL_NAME = "gpt-3.5-turbo"
+EXIT_COMMAND = "stop chat"
+OPENAI_API_ENDPOINT = "https://api.openai.com/v1/"
 
-2. Run the script in a Python environment.
-
-3. Enter your messages in the console, and the AI will respond accordingly.
-
-## Script Details
-
-- `chat_with_openai(prompt, history)`: Sends the user input to the OpenAI API, updates the chat history, and returns the AI response.
-
-- `save_chat_history(history, filename="chat_history.json")`: Saves the chat history to a JSON file.
-
-- `main()`: Main function to run the chat interaction loop.
-
-## How to Run
-
-```bash
-python PythonChat_002.py
+if not OPENAI_API_KEY:
+    raise ValueError("Please provide a valid OpenAI API key.")
 ```
 
-## Notes
+## Script Overview
 
-- Type 'exit' to end the conversation.
+### 1. Import Libraries and Modules
+```python
+import json
+import logging
+import requests
+from os import path
+from config import EXIT_COMMAND, OPENAI_API_KEY, OPENAI_MODEL_NAME, OPENAI_API_ENDPOINT
+from openai import OpenAI, OpenAIError
+```
 
-- The chat history is saved to `chat_history.json` for future reference or training.
+### 2. Initialize OpenAI Client
+```python
+api_key = OPENAI_API_KEY
+client = OpenAI(api_key=api_key)
+```
 
-## Dependencies
+### 3. Define Functions
 
-- Ensure you have the required dependencies installed. You can use the following command:
+#### a. `chat_with_openai(prompt, history)`
+Handles the conversation with OpenAI GPT-3.5 Turbo.
+- Appends user input to the conversation history.
+- Sends a request to OpenAI's chat completions endpoint.
+- Handles API errors and returns AI responses.
 
-  ```bash
-  pip install -r requirements.txt
-  ```
+#### b. `save_chat_history(history, filename="chat_history.json")`
+Saves the chat history to a JSON file.
 
-## License
+#### c. `show_help()`
+Displays a help message with usage instructions.
 
-This script is licensed under the [MIT License](LICENSE).
+#### d. `show_chat_history(history, max_display=5)`
+Displays the recent chat history.
+
+#### e. `load_chat_history(filename="chat_history.json")`
+Loads the chat history from a JSON file.
+
+### 4. Main Execution in `main()`
+
+- Loads existing chat history.
+- Initiates a conversation loop.
+- Handles user input, including exit command, help, and history display.
+- Uses OpenAI for user input and displays AI responses.
+- Saves the updated chat history.
+
+### 5. Run the Script
+```python
+if __name__ == "__main__":
+    main()
+```
+
+## How to Use
+
+1. Run the script.
+2. Enter your messages as a user.
+3. Type 'exit' to end the conversation.
+4. Type 'help' for assistance.
+5. Type 'history' to view recent chat history.
+

@@ -36,8 +36,14 @@ def chat_with_openai(prompt, history):
         logging.error(f"OpenAI API error: {e}")
         return "I'm sorry, but I encountered an error during the conversation."
 
-    history.append({"role": "assistant", "content": ai_response})
+    # Example: Check for specific conditions in the AI response
+    if "Can you provide more details about" in ai_response:
+        # Example: Ask a follow-up question
+        follow_up_question = input(f"AI: {ai_response} ")
+        history.append({"role": "user", "content": follow_up_question})
+        return f"User: {follow_up_question}"
 
+    history.append({"role": "assistant", "content": ai_response})
     return ai_response
 
 def save_chat_history(history, filename="chat_history.json"):
