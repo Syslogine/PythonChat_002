@@ -52,11 +52,23 @@ def save_chat_history(history, filename="chat_history.json"):
 
 def show_help():
     help_message = (
-        "\033[1;32mYou can interact with the ChatBot by typing messages.\033[0m\n"
-        "\033[1;34mType 'exit' to end the conversation.\033[0m\n"
-        "\033[1;36mAdditionally, you can type 'help' for assistance.\033[0m"
+        "\033[1;32mWelcome to the ChatBot!\033[0m\n"
+        "You can interact with the ChatBot by typing messages.\n"
+        "Here are some available commands:\n"
+        "\033[1;34m- Type 'exit' to end the conversation.\033[0m\n"
+        "\033[1;36m- Type 'help' for assistance.\033[0m\n"
+        "\033[1;33m- Type 'history' to view recent chat history.\033[0m\n"
+        "\033[1;35m- Type 'options' to see additional features.\033[0m"
     )
     print(f"AI: \n{help_message}")
+
+def show_options():
+    options_message = (
+        "\033[1;35mAdditional Options:\033[0m\n"
+        "\033[1;36m- Type 'save' to save the current chat history.\033[0m\n"
+        "\033[1;33m- Type 'clear' to clear the chat history.\033[0m"
+    )
+    print(f"AI: \n{options_message}")
 
 def show_chat_history(history, max_display=5):
     print("AI: Here is the recent chat history:")
@@ -87,7 +99,7 @@ def main():
     print("Welcome to the ChatBot! Type 'exit' to end the conversation.")
 
     def is_valid_input(user_input):
-        return user_input.strip() != '' or user_input.lower() == 'history'
+        return user_input.strip() != '' or user_input.lower() in {'history', 'options'}
 
     while True:
         user_input = input("User: ")
@@ -103,6 +115,8 @@ def main():
             show_help()
         elif user_input.lower() == 'history':
             show_chat_history(chat_history)
+        elif user_input.lower() == 'options':
+            show_options()
         else:
             ai_response = chat_with_openai(user_input, chat_history)
             print(f"AI: {ai_response}")
